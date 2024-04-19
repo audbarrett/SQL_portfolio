@@ -113,15 +113,66 @@ WHERE a.address_id IN
 );
 
 -- Write a query to get the number of copies of a film title that exist in the inventory
-SELECT * FROM inventory;
+SELECT film.title, COUNT(inventory.film_id) AS "Number of Copies"
+FROM film
+JOIN inventory ON film.film_id = inventory.film_id
+GROUP BY film.title
+ORDER BY film.title;
+
+-- alternate method using subquery
+SELECT title,
+(SELECT COUNT(inventory.film_id)
+		FROM inventory
+		WHERE film.film_id = inventory.film_id) AS "Number of Copies"
+FROM film;
 
 -- Create a view named title_count from the above query.
-
+CREATE VIEW title_count AS
+SELECT title,
+(SELECT COUNT(inventory.film_id)
+		FROM inventory
+		WHERE film.film_id = inventory.film_id) AS "Number of Copies"
+FROM film;
 
 -- Query the newly created view to find all the titles that have 7 copies.
+SELECT title, "Number of Copies"
+FROM title_count
+WHERE "Number of Copies" = 7;
 
+-- identify all actors who appear in the film ALTER VICTORY in the pagila database.
+SELECT first_name, last_name
+FROM actor
+WHERE actor_id IN
+(
+	SELECT actor_id
+	FROM film_actor
+	WHERE film_id IN
+	(
+		SELECT film_id
+		FROM film
+		WHERE title = 'ALTER VICTORY'
+	)
+);
 
-
-
+-- display the titles of films that the employee Jon Stephens rented to customers.
+SELECT title
+FROM film
+WHERE film_id IN
+(
+	SELECT film_id
+	FROM inventory
+	WHERE inventory_id IN
+	(
+		SELECT inventory_id
+		FROM rental
+		WHERE staff_id IN
+		(
+			SELECT staff_id
+			FROM staff
+			WHERE first_name = 'Jon'
+			AND last_name = 'Stephens'
+		)
+	)
+); 
 
 
